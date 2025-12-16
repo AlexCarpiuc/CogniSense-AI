@@ -18,7 +18,6 @@ import matplotlib.pyplot as plt
 
 # --- BIBLIOTECI EXTERNE ---
 from wordcloud import WordCloud
-from textblob import TextBlob
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 from scipy.special import softmax
 from fpdf import FPDF
@@ -26,7 +25,6 @@ import plotly.express as px
 import speech_recognition as sr
 import librosa
 import librosa.display
-import soundfile as sf
 
 # --- NLP SETUP ---
 import nltk
@@ -41,13 +39,13 @@ from nltk.tokenize import sent_tokenize
 # 1. CONFIGURARE & CONSTANTE
 # ==========================================
 
-# Detalii Student & Universitate (MODIFICĂ AICI)
+# Info
 STUDENT_NAME = "Carpiuc Alex"
 COORD_NAME = "Prof. Dr. Dioșan Laura"
 UNIV_NAME = "Universitatea Babeș-Bolyai"
 FACULTY_NAME = "Facultatea de Matematică și Informatică"
 
-# Configurare Pagină Streamlit
+# Configurare Pagina Streamlit
 st.set_page_config(
     page_title="CogniSense AI",
     page_icon="🧠",
@@ -55,7 +53,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Stiluri CSS pentru interfață
+# Css interfata
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
@@ -91,7 +89,7 @@ st.markdown("""
         border-bottom: 2px solid #b71c1c;
     }
 
-    /* Banner Alertă Risc */
+    /* Banner Alerta Risc */
     .safety-banner {
         background-color: #ffebee;
         border: 2px solid #ef5350;
@@ -112,7 +110,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Inițializare Session State (Memorie temporară)
+#Session State (Memorie temporara)
 if 'last_text' not in st.session_state: st.session_state['last_text'] = ""
 if 'last_pred' not in st.session_state: st.session_state['last_pred'] = ""
 if 'session_transcript' not in st.session_state: st.session_state['session_transcript'] = ""
@@ -123,7 +121,7 @@ if 'emotion_scores' not in st.session_state: st.session_state['emotion_scores'] 
 if 'narrative_text' not in st.session_state: st.session_state['narrative_text'] = ""
 if 'accepted_terms' not in st.session_state: st.session_state['accepted_terms'] = False
 
-# Căi Fișiere & Modele
+# Routing Fisiere & Modele
 MODEL_DIR_BINARY = "../models/model_binary"
 MODEL_DIR_MULTI = "../models/model_multi"
 FEEDBACK_FILE = "../data/feedback_data.csv"
@@ -131,7 +129,7 @@ TEMP_AUDIO_FILE = "temp_recording.wav"
 TEMP_RADAR_FILE = "temp_radar.png"
 device = torch.device("cpu")
 
-# Definiții Clinice (CBT)
+# Definitii explicative clase distorsiuni cognitive + tips
 DISTORTION_DEFINITIONS = {
     "All-or-nothing thinking": "Thinking in absolutes (black & white).",
     "Emotional Reasoning": "Assuming feelings are facts.",
@@ -158,7 +156,7 @@ CBT_STRATEGIES = {
     "Should statements": "💡 **Tip:** Use 'It would be nice if...'."
 }
 
-# Ponderi pentru calculul riscului (Heuristică)
+# Ponderi pentru calculul riscurilor de anxietate/depresie
 CLINICAL_WEIGHTS = {
     "All-or-nothing thinking": {"dep": 1.2, "anx": 0.5},
     "Emotional Reasoning": {"dep": 0.8, "anx": 0.8},
@@ -173,14 +171,14 @@ CLINICAL_WEIGHTS = {
 }
 
 
-# ==========================================
-# 2. ÎNCĂRCARE MODELE AI
-# ==========================================
+# =======================
+# 2. INCARCARE MODELE
+# =======================
 @st.cache_resource
 def load_models():
     """
-    Încarcă modelele BERT fine-tuned și modelul de emoții RoBERTa.
-    Folosește @st.cache_resource pentru a nu reîncărca la fiecare interacțiune.
+    Incarca modelele BERT fine-tuned si modelul de emotii RoBERTa.
+    Foloseste @st.cache_resource pentru a nu reincarca la fiecare interactiune.
     """
     try:
         if not os.path.exists(MODEL_DIR_BINARY) or not os.path.exists(MODEL_DIR_MULTI):
@@ -198,7 +196,7 @@ def load_models():
         emotion_classifier = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base",
                                       return_all_scores=True)
 
-        # Încărcare etichete
+
         label_path = os.path.join(MODEL_DIR_MULTI, "labels.txt")
         if os.path.exists(label_path):
             with open(label_path, 'r') as f:
@@ -216,11 +214,11 @@ tokenizer_bin, model_bin, tokenizer_multi, model_multi, label_list_multi, emotio
 
 
 # ==========================================
-# 3. FUNCȚII DE PROCESARE NLP & AUDIO
+# 3. FUNCTII DE PROCESARE NLP & AUDIO
 # ==========================================
 
 def predict_full_pipeline(text):
-    """Pipeline complet: Binar -> Multi-class."""
+    """Pipeline complet: Binar -> Multi."""
     # Pas 1: Predicție Binară
     inputs = tokenizer_bin(text, return_tensors="pt", truncation=True, max_length=128).to(device)
     with torch.no_grad():
@@ -232,7 +230,7 @@ def predict_full_pipeline(text):
     if pred_bin == 0:
         return "Non-Distorted", conf_bin, None, conf_bin, 0
 
-    # Pas 2: Predicție Multi-class (doar dacă e distorsionat)
+    # Pas 2: Predictie Multi
     inputs_m = tokenizer_multi(text, return_tensors="pt", truncation=True, max_length=128).to(device)
     with torch.no_grad():
         output_m = model_multi(**inputs_m)
@@ -242,28 +240,28 @@ def predict_full_pipeline(text):
 
 
 def analyze_emotions_granular(text):
-    """Extrage scorurile pentru 7 emoții de bază (Ekman)."""
+    """Extrage scorurile pentru 7 emotii de baza."""
     if not text or len(text.split()) < 2: return {}
     preds = emotion_pipe(text[:512])
     return {item['label']: item['score'] for item in preds[0]}
 
 
 def explain_text(text, target_label):
-    """XAI: Calculează importanța cuvintelor prin tehnica de perturbare."""
+    """XAI: Calculeaza importanta cuvintelor prin tehnica de perturbare."""
     words = text.split()
     base_type, base_conf, _, _, _ = predict_full_pipeline(text)
     if base_type == "Non-Distorted": return []
 
     importance_scores = []
-    words_to_check = words[:50]  # Limitare pentru performanță
+    words_to_check = words[:50]
     for i in range(len(words_to_check)):
         if len(words[i]) < 3 and words[i].lower() not in ["no", "not", "bad", "sad"]:
             importance_scores.append((words[i], 0))
             continue
-        # Mascare cuvânt și re-predicție
+
         masked_text = " ".join(words[:i] + words[i + 1:])
         _, new_conf, _, _, _ = predict_full_pipeline(masked_text)
-        impact = base_conf - new_conf  # Diferența e impactul cuvântului
+        impact = base_conf - new_conf
         importance_scores.append((words[i], impact))
     return importance_scores
 
@@ -274,17 +272,17 @@ def extract_vocal_features(audio_file, text_transcript):
         y, sr_rate = librosa.load(audio_file, sr=None)
         duration = librosa.get_duration(y=y, sr=sr_rate)
 
-        # Detectare liniște vs vorbire
+        # Detectare liniste vs vorbire
         non_silent_intervals = librosa.effects.split(y, top_db=20)
         speech_time = sum((end - start) / sr_rate for start, end in non_silent_intervals)
         silence_time = duration - speech_time
         silence_ratio = (silence_time / duration) * 100
 
-        # Calcul WPM (Words Per Minute)
+        # Calcul WPM
         word_count = len(text_transcript.split()) if text_transcript else 0
         wpm = (word_count / duration) * 60 if duration > 0 else 0
 
-        # Calcul Pitch (F0) - Variația intonației
+        # Calcul Pitch (F0)
         f0 = librosa.yin(y, fmin=60, fmax=300)
         f0 = f0[f0 > 0]
         pitch_std = np.std(f0) if len(f0) > 0 else 0
@@ -300,7 +298,7 @@ def extract_vocal_features(audio_file, text_transcript):
 
 
 def transcribe_speech_and_analyze(status_placeholder):
-    """Înregistrează microfon, transcrie (Google API) și analizează."""
+    """Inregistreaza microfon, transcrie (Google API) si analizeaza."""
     r = sr.Recognizer()
     r.dynamic_energy_threshold = True
     r.energy_threshold = 300
@@ -338,7 +336,7 @@ def transcribe_speech_and_analyze(status_placeholder):
 
 
 def process_uploaded_audio(uploaded_file, status_placeholder):
-    """Procesează fișiere audio încărcate (WAV/MP3)."""
+    """Proceseaza fisiere audio incarcate (WAV/MP3)."""
     try:
         status_placeholder.info("📂 Processing uploaded file...")
         with open(TEMP_AUDIO_FILE, "wb") as f:
@@ -360,7 +358,7 @@ def process_uploaded_audio(uploaded_file, status_placeholder):
 
 
 def plot_spectrogram(audio_file):
-    """Generează spectrograma Mel-frequency pentru vizualizare."""
+    """Generează spectrograma """
     try:
         y, sr = librosa.load(audio_file)
         fig, ax = plt.subplots(figsize=(10, 3))
@@ -374,7 +372,7 @@ def plot_spectrogram(audio_file):
 
 
 def generate_narrative_report(scores, audio_features, emotions):
-    """Generează un text narativ (în engleză) bazat pe toți parametrii."""
+    """Genereaza un text narativ bazat pe toti parametrii."""
     dom_risk = "Anxiety" if scores['anxiety'] > scores['depression'] else "Depression"
     max_score = max(scores['depression'], scores['anxiety'])
     level = "Severe" if max_score > 3.5 else "Moderate" if max_score > 2.0 else "Mild"
@@ -398,7 +396,7 @@ def generate_narrative_report(scores, audio_features, emotions):
 
 
 def analyze_session(full_text):
-    """Funcția principală care leagă toate analizele pentru o sesiune."""
+    """Functia principala care leaga toate analizele pentru o sesiune."""
     sentences = smart_sentence_split(full_text)
     results = []
     distortion_counts = {label: 0 for label in label_list_multi}
@@ -502,7 +500,7 @@ def create_download_link(results, counts, insights, audio_features=None, emotion
             for emo, score in sorted_emotions:
                 pdf.cell(0, 7, txt=f"- {emo.capitalize()}: {score:.2%}", ln=True)
 
-        # Grafic Radar (Imagine)
+        # Grafic Radar
         if os.path.exists(TEMP_RADAR_FILE):
             pdf.ln(5)
             pdf.set_font("Arial", 'B', 12)
@@ -548,7 +546,7 @@ def create_download_link(results, counts, insights, audio_features=None, emotion
 # 4. ECRAN DE START & SIDEBAR
 # ==========================================
 
-# Ecran de Consimțământ
+# ConsentForm
 if not st.session_state['accepted_terms']:
     st.markdown("<br><br><br>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([1, 2, 1])
@@ -571,7 +569,7 @@ if not st.session_state['accepted_terms']:
             st.rerun()
     st.stop()
 
-# Sidebar - Informații Academice
+# Sidebar - Informatii
 with st.sidebar:
     st.markdown("## 🩺 Control Panel")
     st.image("https://cdn-icons-png.flaticon.com/512/3004/3004458.png", width=100)
@@ -586,7 +584,7 @@ with st.sidebar:
     user_mode = st.radio("Display Mode", ["Doctor (Clinical)", "Patient (Simplified)"])
 
     st.markdown("---")
-    # Reset Button (Nou)
+    # Reset Button
     if st.button("🗑️ Reset Session", use_container_width=True):
         for key in st.session_state.keys():
             if key != 'accepted_terms':  # Păstrăm consent-ul
@@ -620,7 +618,7 @@ tab1, tab2, tab3 = st.tabs(["⚡ Real-Time Analysis", "📂 Session Profiling", 
 # TAB 1: SINGLE THOUGHT ANALYSIS
 # ==========================================
 with tab1:
-    st.markdown("### 🗣️ Analyze a single thought")
+    st.markdown("### 🔍 Analyze a single thought")
     col_input, col_viz = st.columns([1, 1])
     with col_input:
         user_input = st.text_area("Patient Statement:", "I failed the test, so I am a complete loser.", height=150)
@@ -657,7 +655,7 @@ with tab1:
                         st.markdown(html_text, unsafe_allow_html=True)
                         st.caption("*Words highlighted in red strongly influenced the AI prediction.*")
 
-    # Feedback Loop
+    # Feedback
     if st.session_state['last_text']:
         st.markdown("---")
         with st.expander("👩‍⚕️ Expert Feedback Loop (Improve the Model)"):
@@ -737,7 +735,7 @@ with tab2:
             else:
                 insights.append(("✅ **Balanced State:** No significant patterns detected.", "#43a047", "white"))
 
-            # Generare Narațiune
+
             narrative = generate_narrative_report(scores, st.session_state.get('audio_features'), emotions)
             st.session_state['narrative_text'] = narrative
 
@@ -862,9 +860,9 @@ with tab2:
                 * **Pitch Std:** <15 Hz indicates flat affect (Monotony), a negative symptom of depression.
                 """)
 
-# ==========================================
-# TAB 3: BULK PROCESSING (WORD CLOUD)
-# ==========================================
+# ========================
+# TAB 3: BULK PROCESSING
+# ========================
 with tab3:
     st.markdown("### 🚀 Batch Processing")
     f = st.file_uploader("Upload CSV", type=["csv"])

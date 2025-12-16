@@ -1,64 +1,85 @@
+"""
+CogniSense AI - Data Preparation Pipeline
+Author: Carpiuc Alex
+University: Universitatea Babeș-Bolyai
+Description:
+    Acest script gestioneaza fluxul ETL (Extract, Transform, Load):
+    1. Incarca datele brute (CSV).
+    2. Curata si standardizeaza etichetele.
+    3. Genereaza etichete binare pentru modelul de screening.
+    4. Imparte datele in seturi Train/Validation/Test folosind stratificare.
+    5. Salveaza fisierele procesate pentru antrenare.
+"""
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import os
 
-# --- 0. CONFIGURARE ---
+# ==========================================
+# 1. CONFIGURARE & CONSTANTE
+# ==========================================
 INPUT_FILE = '../data/Annotated_data.csv'
 OUTPUT_DIR = '../data/'
 RANDOM_SEED = 42
 
-# Ne asigurăm că directorul de output există
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# --- 1. ÎNCĂRCAREA ȘI CURĂȚAREA DATELOR ---
+# ======================================
+# 2. INCARCAREA SI CURATAREA DATELOR
+# ======================================
 try:
     df = pd.read_csv(INPUT_FILE)
-    print("✅ Datele au fost încărcate cu succes.")
+    print(" Datele au fost incarcate cu succes.")
 except FileNotFoundError:
-    print(f"❌ Eroare: Nu am găsit fișierul la calea: {INPUT_FILE}")
+    print(f"Eroare: Nu am gasit fisierul: {INPUT_FILE}")
     exit()
 
-# Reținerea coloanelor esențiale și redenumirea lor
+# Pastram doar coloanele relevante, le redenumim si eliminam randuri incomplete
+    # 'id': Identificator unic
+    # 'text': Declaratia pacientului
+    # 'label_multi': Eticheta clinica (tipul distorsiunii)
 df = df[['Id_Number', 'Patient Question', 'Dominant Distortion']].copy()
 df.columns = ['id', 'text', 'label_multi']
 df.dropna(subset=['text', 'label_multi'], inplace=True)
 
-# --- 2. CREAREA ETICHETEI BINARE (MODEL I - SCREENING) ---
-# 'No Distortion' este clasa negativă (0); orice altceva este Distorsionat (1)
+# ====================================
+# 3. FEATURE ENGINEERING (Etichete)
+# ====================================
+
+# Generare Eticheta Binara pentru Modelul 1
+# Logica: 0 = 'No Distortion', 1 = 'Distortion'
 df['label_binary'] = df['label_multi'].apply(lambda x: 0 if x == 'No Distortion' else 1)
-
-# --- 3. ÎMPĂRȚIREA DATELOR (Train/Val/Test) ---
-
-# Split-ul I: Separă 80% Train, 20% Temporar (pentru Validation și Test)
-# Folosim 'stratify' pentru a menține proporția de 0/1 (Non/Distorsionat) în fiecare set
+# =========================================================
+# 4. IMPARTIREA DATELOR (Train/Val/Test) - in 2 splituri
+# =========================================================
 train_df, temp_df = train_test_split(
     df, test_size=0.2, random_state=RANDOM_SEED, stratify=df['label_binary']
 )
 
-# Split-ul II: Separă setul temporar în 10% Validation și 10% Test
 val_df, test_df = train_test_split(
     temp_df, test_size=0.5, random_state=RANDOM_SEED, stratify=temp_df['label_binary']
 )
+# ================================================
+# 5. PREGATIREA SETURILOR PENTRU AMBELE MODELE
+# ================================================
 
-# --- 4. PREGĂTIREA SETURILOR PENTRU AMBELE MODELE ȘI SALVAREA ---
-
-# 4.1. Seturile pentru Modelul I (Binar)
+# 5.1. Seturile pentru Modelul I (Binar)
 train_df.to_csv(os.path.join(OUTPUT_DIR, 'train_df_binary.csv'), index=False)
 val_df.to_csv(os.path.join(OUTPUT_DIR, 'val_df_binary.csv'), index=False)
 test_df.to_csv(os.path.join(OUTPUT_DIR, 'test_df_binary.csv'), index=False)
-print("✅ Seturile Binar (Model I) salvate.")
+print("Seturile Binar (Model I) salvate.")
 
 
-# 4.2. Seturile pentru Modelul II (Multi-Class) - Filtrare
-# Păstrăm doar rândurile clasificate ca fiind Distorsionate (label_binary == 1)
+# 5.2. Seturile pentru Modelul II (Multi-Class)
+
 train_multi = train_df[train_df['label_binary'] == 1].copy()
 val_multi = val_df[val_df['label_binary'] == 1].copy()
 test_multi = test_df[test_df['label_binary'] == 1].copy()
 
-# Salvăm seturile filtrate
+# 5.3. Salvare
 train_multi.to_csv(os.path.join(OUTPUT_DIR, 'train_df_multi.csv'), index=False)
 val_multi.to_csv(os.path.join(OUTPUT_DIR, 'val_df_multi.csv'), index=False)
 test_multi.to_csv(os.path.join(OUTPUT_DIR, 'test_df_multi.csv'), index=False)
-print("✅ Seturile Multi-Class (Model II) salvate.")
+print("Seturile Multi-Class (Model II) salvate.")
 
-print("\n--- Preprocesare încheiată. Vă rugăm să rulați scriptul de antrenare a modelelor. ---")
+print("\n--- Preprocesare incheiata cu succes. Poate incepe antrenamentul modulelor. ---")
