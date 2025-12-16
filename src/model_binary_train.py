@@ -1,11 +1,28 @@
+"""
+CogniSense AI - Binary Classification Training Pipeline
+Author: Carpiuc Alex
+University: Universitatea Babeș-Bolyai
+Description:
+    Acest script antreneaza Modelul I (Screening Binar).
+    Scop: Distinge intre 'Non-Distorsionat' si 'Distorsionat'
+
+    Arhitectura:
+    - Metodologie: Fine-tuning pe modelul BERT (bert-base-uncased).
+    - Loss Function: Standard Cross-Entropy.
+    - Metrici: F1-Score (pentru a balansa Precision/Recall).
+"""
+
+
+
 import pandas as pd
 import os
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
 from datasets import Dataset
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-import torch
 
-# --- 0. CONFIGURARE ---
+# =============================
+# 1. CONFIGURARE & PARAMETRI
+# =============================
 MODEL_NAME = "bert-base-uncased"
 NUM_LABELS = 2
 OUTPUT_DIR = "../models/model_binary"
@@ -13,45 +30,60 @@ RANDOM_SEED = 42
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# ⚠️ Atenție: Încărcare din fișierele salvate de data_prep.py
+# ==========================================
+# 2. INCARCAREA SETURILOR DE DATE
+# ==========================================
 try:
     train_df = pd.read_csv('../data/train_df_binary.csv')
     val_df = pd.read_csv('../data/val_df_binary.csv')
-    print("✅ Datele Binar (Model I) încărcate.")
+    print("Datele Binar (Model I) incarcate.")
 except FileNotFoundError:
-    print("❌ Eroare: Nu am găsit fișierele de date binare. Rulează '../src/data_prep.py' mai întâi.")
+    print("Eroare: Nu am gasit fisierele de date binare.")
     exit()
 
-# --- 1. PREGĂTIRE TOKENIZER ȘI DATASET ---
+# ==========================================
+# 3. TOKENIZARE SI PREGATIRE DATASET
+# ==========================================
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
 
 def tokenize_function(examples):
-    # 'text' este coloana Patient Question redenumită
+    """
+        Transforma textul in tokeni numerici acceptati de BERT.
+    """
     return tokenizer(examples["text"], padding="max_length", truncation=True)
 
 
-# Conversia DataFrame-urilor în formatul 'Dataset'
+# Conversie din Pandas DataFrame in HuggingFace Dataset
 train_dataset = Dataset.from_pandas(train_df).map(tokenize_function, batched=True)
 val_dataset = Dataset.from_pandas(val_df).map(tokenize_function, batched=True)
 
-# Renumim coloana 'label_binary' în 'labels' (cerută de Trainer)
+# Ajustari structurale pentru compatibilitatea cu biblioteca Transformers:
+
 train_dataset = train_dataset.rename_column("label_binary", "labels")
 val_dataset = val_dataset.rename_column("label_binary", "labels")
 
-# Eliminăm coloanele inutile
+
 train_dataset = train_dataset.remove_columns(["id", "text", "label_multi"])
 val_dataset = val_dataset.remove_columns(["id", "text", "label_multi"])
 
-# Modelul BERT (adaugă un strat de clasificare pentru 2 etichete)
+# =======================
+# 4. INITIALIZARE MODEL
+# =======================
+
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=NUM_LABELS)
 
 
-# --- 2. METRICI DE EVALUARE ---
+# ==========================================
+# 5. DEFINIREA METRICILOR DE PERFORMANTA
+# ==========================================
 def compute_metrics(p):
+    """
+        Functie apelata la finalul fiecarei epoci pentru evaluare.
+        Returneaza: Accuracy, Precision, Recall si F1-Score.
+    """
     predictions = p.predictions.argmax(axis=1)
 
-    # average='binary' este folosit pentru clasificarea binară
     precision, recall, f1, _ = precision_recall_fscore_support(p.label_ids, predictions, average='binary')
     acc = accuracy_score(p.label_ids, predictions)
 
@@ -63,7 +95,9 @@ def compute_metrics(p):
     }
 
 
-# --- 3. ARGUMENTE ȘI RULARE TRAINER ---
+# =========================
+# 6. CONFIGURARE TRAINER
+# =========================
 training_args = TrainingArguments(
     output_dir=OUTPUT_DIR,
     num_train_epochs=3,
@@ -80,9 +114,9 @@ training_args = TrainingArguments(
     save_strategy="epoch",
 
 
-    metric_for_best_model="f1",  # Spunem modelului să urmărească F1-Score
-    greater_is_better=True,  # Spunem modelului că scorul F1 mai mare este mai bun
-    load_best_model_at_end=True,  # ⬅️ Păstrăm totuși această denumire, dar adăugăm metrici de bază
+    metric_for_best_model="f1",
+    greater_is_better=True,
+    load_best_model_at_end=True,
 
 
     seed=RANDOM_SEED,
@@ -98,10 +132,13 @@ trainer = Trainer(
     tokenizer=tokenizer
 )
 
-print("\n🔥 Începe Finetuning-ul Modelului I (Binar - Screening)...")
+# =====================================
+# 7. EXECUTIE ANTRENAMENT SI SALVARE
+# =====================================
+
+print("\n Incepe Finetuning-ul Modelului I (Binar - Screening)...")
 trainer.train()
 
-# --- 4. SALVARE MODEL FINAL ---
 trainer.save_model(OUTPUT_DIR)
 tokenizer.save_pretrained(OUTPUT_DIR)
-print(f"✅ Modelul I a fost salvat în directorul: {OUTPUT_DIR}")
+print(f" Modelul I a fost salvat in: {OUTPUT_DIR}")
