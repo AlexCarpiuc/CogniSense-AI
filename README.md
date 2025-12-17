@@ -38,6 +38,12 @@ Unlike standard sentiment analysis tools, this system implements a hierarchical 
 
 ---
 
+to run the app:
+Don't forget to install the requirements!
+1. open the python terminal
+2. cd src
+3. streamlit run app.py
+
 ## 📂 Project Structure
 
 ```text
@@ -54,3 +60,5 @@ CogniSense-AI/
 │   └── evaluate.py         # Metrics calculation (F1-Score, Confusion Matrix)
 ├── requirements.txt        # Python dependencies
 └── README.md               # Project documentation
+
+

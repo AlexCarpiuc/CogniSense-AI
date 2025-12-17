@@ -1,0 +1,109 @@
+========================
+ COGNISENSE AI - TAB 2
+========================
+Use these inputs to test the "Patient Mode".
+Focus: Observe the "AI Therapist Response" and "Recommended CBT Exercise".
+CogniSenseAI will NOT be able to predict these correctly fully, however, these are the correct responses.
+
+---------------------------------------------------------------------
+SCENARIO 1: ANXIETY & PANIC (Future-oriented fear)
+---------------------------------------------------------------------
+"I have a big presentation tomorrow and I can't stop shaking. 
+I just know I'm going to freeze up, forget all my lines, and everyone 
+will see how incompetent I am. It's going to be a total disaster."
+
+> EXPECTED OUTCOME: 
+> Distortion: Catastrophizing / Fortune Telling
+> Associated Condition: ANXIETY
+
+---------------------------------------------------------------------
+SCENARIO 2: DEPRESSION & LOW MOTIVATION
+---------------------------------------------------------------------
+"I didn't get out of bed today. I felt like there was no point. 
+I tried to work on my project, but I made one mistake and gave up. 
+I'll never be successful like my friends. I'm just stuck."
+
+> EXPECTED OUTCOME:
+> Distortion: All-or-Nothing Thinking / Overgeneralization
+> Associated Condition: DEPRESSION
+
+---------------------------------------------------------------------
+SCENARIO 3: INTERPERSONAL CONFLICT (Anger/Frustration)
+---------------------------------------------------------------------
+"My partner came home late again without calling. He obviously doesn't 
+care about me or respect my time. If he loved me, he would never do this. 
+He is so selfish."
+
+> EXPECTED OUTCOME:
+> Distortion: Mind Reading / Labeling / Should Statements
+> Associated Condition: ANXIETY
+
+---------------------------------------------------------------------
+SCENARIO 4: SOCIAL ANXIETY
+---------------------------------------------------------------------
+"I went to the party but I stood in the corner the whole time. 
+I saw two people whispering and laughing, and I know they were making 
+fun of my outfit. I should have just stayed home."
+
+> EXPECTED OUTCOME:
+> Distortion: Mind Reading / Personalization
+> Associated Condition: ANXIETY
+---------------------------------------------------------------------
+SCENARIO 5: PROGRESS & POSITIVE REINFORCEMENT (Healthy)
+---------------------------------------------------------------------
+"I felt really nervous about the meeting today, but I remembered to 
+breathe and take it one step at a time. It actually went okay. 
+I'm proud that I didn't cancel it like I wanted to."
+
+> EXPECTED OUTCOME:
+> Distortion: None (or low confidence score)
+> Associated Condition: NONE
+
+---------------------------------------------------------------------
+SCENARIO 6: HIGH ANXIETY PATTERN
+---------------------------------------------------------------------
+"I can't stop worrying about the interview. My heart is racing. 
+I just know I'm going to freeze up, say something stupid, and they 
+will laugh at me. It's going to be a total disaster."
+
+> EXPECTED OUTCOME:
+> Distortion: Catastrophizing / Fortune Telling
+> Associated Condition: ANXIETY
+
+---------------------------------------------------------------------
+SCENARIO 7: DEPRESSIVE PATTERN
+---------------------------------------------------------------------
+INPUT TEXT:
+"I tried to finish the task but I made a mistake. It proves that 
+I am completely incompetent. I'm just a failure at everything I do. 
+There is no point in trying anymore."
+
+> EXPECTED OUTCOME:
+> Distortion: All-or-Nothing Thinking / Labeling
+> Associated Condition: DEPRESSION 
+
+---------------------------------------------------------------------
+SCENARIO 8: ANGER & INTERPERSONAL CONFLICT
+---------------------------------------------------------------------
+INPUT TEXT:
+"He didn't reply to my text immediately. He obviously doesn't respect me. 
+People should always answer within 5 minutes if they care. He is such 
+a selfish jerk."
+
+> EXPECTED OUTCOME:
+> Distortion: Should Statements / Mind Reading
+> Associated Condition: ANXIETY
+
+---------------------------------------------------------------------
+SCENARIO 9: SOCIAL PHOBIA
+---------------------------------------------------------------------
+INPUT TEXT:
+"I walked into the room and saw them whispering. I know they were 
+talking about my outfit. Everyone thinks I look weird. I feel so 
+exposed."
+
+> EXPECTED OUTCOME:
+> Distortion: Mind Reading / Personalization
+> Associated Condition: ANXIETY
+
+=====================================================================

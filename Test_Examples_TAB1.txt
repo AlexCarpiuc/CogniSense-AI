@@ -1,0 +1,57 @@
+======================================
+ COGNISENSE AI - TEST EXAMPLES TAB 1 
+======================================
+Use these sentences to test the application's capabilities.
+Copy and paste them into the "Patient Statement" text area.
+CogniSenseAI will NOT be able to predict these correctly fully, however, these are the correct responses.
+
+-----------------------------------------------
+🟢 NON-DISTORTED (Healthy/Balanced Thoughts)
+-----------------------------------------------
+1. "I failed the exam, but I can study harder and try again next time."
+2. "I feel a bit sad today, but I know this feeling will pass eventually."
+3. "My boss criticized my report, but he also gave me some good advice on how to improve."
+4. "I am nervous about the presentation, which is a normal reaction."
+5. "I didn't finish all my tasks today, but I did the most important ones."
+
+-------------------------------------------------
+🔴 DISTORTED THOUGHTS (Cognitive Distortions)
+-------------------------------------------------
+
+[Catastrophizing]
+"If I make a small mistake in the presentation, the whole project will fail and I'll get fired."
+"I felt a pain in my chest, I am definitely having a heart attack and dying."
+
+[All-or-Nothing Thinking]
+"I made a mistake on the test, so now I am a complete failure."
+"If I'm not the best at this, then I am the worst."
+
+[Labeling]
+"I am such a loser, I can't do anything right."
+"He is a terrible person because he was late once."
+
+[Emotional Reasoning]
+"I feel like I am a burden to everyone, so I must be one."
+"I feel guilty, so I must have done something wrong."
+
+[Mind Reading]
+"I saw them whispering; I just know they are talking about how stupid I look."
+"My friend didn't text me back, she must be angry with me."
+
+[Fortune Telling]
+"There is no point in applying for that job, I know I won't get it anyway."
+"I just know something terrible is going to happen tomorrow."
+
+[Overgeneralization]
+"I was rejected by one girl, so I will be alone forever."
+"Everything I touch always turns into a disaster."
+
+[Should Statements]
+"I should always be happy and never feel sad."
+"People should always be nice to me, otherwise life is unfair."
+
+[Personalization]
+"The dinner party was a disaster, and it's all my fault because I suggested the restaurant."
+"My parents are arguing, and I know it's because of me."
+
+=====================================================================

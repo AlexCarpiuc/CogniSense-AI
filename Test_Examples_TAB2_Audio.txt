@@ -1,0 +1,91 @@
+==========================================
+COGNISENSE AI - TAB 2 - AUDIO ANALYSIS 
+==========================================
+INSTRUCTIONS:
+To test the multimodal capabilities (Audio + Text), navigate to the 
+"Microphone Input" section in the application.
+
+Since real clinical audio data is sensitive, use the scripts below 
+and follow the "VOCAL CUES" to simulate the biomarkers.
+
+CogniSenseAI will NOT be able to predict these correctly fully, however, these are the correct responses.
+
+The system analyzes three key metrics:
+1. Speech Rate (WPM) - Speed of speech.
+2. Pitch Variability (F0) - Tonal range (Monotone vs. Expressive).
+3. Silence Ratio - Amount of pausing/hesitation.
+
+========================================================================
+SCENARIO A: DEPRESSION / FLAT AFFECT (Psychomotor Retardation)
+========================================================================
+OBJECTIVE: Trigger detection of low energy and monotony.
+
+VOCAL CUES (ACTING INSTRUCTIONS):
+- Speak significantly slower than normal.
+- Maintain a flat, monotone voice (limit pitch variation).
+- Insert long pauses (2-3 seconds) between sentences.
+- Low volume/intensity.
+
+[SCRIPT TO READ]
+"I just... don't see the point anymore. (Pause)
+Everything feels... so heavy. (Pause)
+I tried to get out of bed this morning... but I couldn't find a reason to.
+(Long Pause)
+It's like looking through a gray fog... nothing matters."
+
+[EXPECTED AUDIO METRICS]
+>> Speech Rate: LOW (<110 WPM)
+>> Pitch Variability: LOW (Flat/Monotone)
+>> Silence Ratio: HIGH (>20%)
+
+========================================================================
+SCENARIO B: ANXIETY / MANIC AGITATION
+========================================================================
+OBJECTIVE: Trigger detection of high arousal and pressure of speech.
+
+VOCAL CUES (ACTING INSTRUCTIONS):
+- Speak very fast (hurried).
+- Breathe shallowly.
+- Minimal pauses between sentences.
+- Higher pitch, possibly shaky voice.
+
+[SCRIPT TO READ]
+"I have to finish the project but I don't have time! If I miss the deadline everything 
+will collapse. Did you hear that noise? I think someone is watching me. 
+My heart is beating so fast I can't breathe I need to leave right now!"
+
+[EXPECTED AUDIO METRICS]
+>> Speech Rate: HIGH (>160 WPM)
+>> Pitch Variability: HIGH (Erratic)
+>> Silence Ratio: LOW (<10%)
+
+========================================================================
+SCENARIO C: CONTROL GROUP (HEALTHY BASELINE)
+========================================================================
+OBJECTIVE: Verify normal range detection.
+
+VOCAL CUES (ACTING INSTRUCTIONS):
+- Normal conversational speed.
+- Natural intonation (ups and downs).
+- Natural pauses at commas and periods.
+
+[SCRIPT TO READ]
+"I had a pretty normal day at work. The traffic was a bit heavy coming home, 
+but I listened to a podcast to pass the time. I plan to cook dinner later 
+and maybe watch a movie."
+
+[EXPECTED AUDIO METRICS]
+>> Speech Rate: NORMAL (130-150 WPM)
+>> Pitch Variability: NORMAL (Dynamic)
+>> Silence Ratio: BALANCED (10-15%)
+
+========================================================================
+FILE UPLOAD TESTING
+========================================================================
+If you prefer not to use the microphone, you can upload standard .WAV files.
+Ensure the files are:
+- Mono or Stereo
+- Sample rate: 16kHz or 44.1kHz
+- Duration: 10-60 seconds for optimal processing.
+
+========================================================================

@@ -864,19 +864,27 @@ with tab2:
 # TAB 3: BULK PROCESSING
 # ========================
 with tab3:
-    st.markdown("### 🚀 Batch Processing")
+    st.header("📊 Batch Processing & Research")
+    st.write("Upload a CSV file with patient statements to analyze cohorts.")
+
     f = st.file_uploader("Upload CSV", type=["csv"])
+
     if f:
         df = pd.read_csv(f)
+
         if 'text' in df.columns and st.button("Start Processing"):
             res = []
             distorted_text_corpus = ""
             bar = st.progress(0)
 
+
             for i, r in df.iterrows():
+
                 dtype, conf, _, bin_conf, bin_class = predict_full_pipeline(str(r['text']))
+
                 screen_res = "Distorted" if bin_class == 1 else "Non-Distorted"
                 clinical_res = dtype if bin_class == 1 else "-"
+
 
                 if bin_class == 1:
                     distorted_text_corpus += " " + str(r['text'])
@@ -890,24 +898,80 @@ with tab3:
                 })
                 bar.progress((i + 1) / len(df))
 
+
             df_res = pd.DataFrame(res)
+            st.success("✅ Processing Complete!")
+
+
             st.dataframe(df_res)
 
+
+            st.divider()
+            st.subheader("📈 Cohort Analysis")
+
+            col_graph1, col_graph2 = st.columns(2)
+
+            with col_graph1:
+                # GRAFIC 1: PIE CHART
+                fig_pie = px.pie(
+                    df_res,
+                    names='Screening Result',
+                    title='Overall Distribution (Healthy vs. Distorted)',
+                    color='Screening Result',
+
+                    color_discrete_map={'Non-Distorted': '#2ecc71', 'Distorted': '#e74c3c'},
+                    hole=0.4
+                )
+                st.plotly_chart(fig_pie, use_container_width=True)
+
+            with col_graph2:
+                # GRAFIC 2: BAR CHART
+
+                distorted_only = df_res[df_res['Clinical Type'] != '-']
+
+                if not distorted_only.empty:
+
+                    counts = distorted_only['Clinical Type'].value_counts().reset_index()
+                    counts.columns = ['Distortion Type', 'Count']
+
+                    fig_bar = px.bar(
+                        counts,
+                        x='Distortion Type',
+                        y='Count',
+                        title='Frequency of Specific Distortions',
+                        color='Count',
+                        color_continuous_scale='Reds'
+                    )
+                    st.plotly_chart(fig_bar, use_container_width=True)
+                else:
+                    st.info("No distortions found to display in Bar Chart.")
+            # ---------------------------------------------
+
+            # 2. AFISARE WORDCLOUD
             if distorted_text_corpus.strip():
-                st.markdown("### ☁️ Common Distortion Themes (Word Cloud)")
-                wc = WordCloud(width=800, height=400, background_color='white', colormap='Reds').generate(
-                    distorted_text_corpus)
-                fig, ax = plt.subplots(figsize=(10, 5))
-                ax.imshow(wc, interpolation='bilinear')
-                ax.axis('off')
-                st.pyplot(fig)
-                plt.close(fig)
+                st.divider()
+                st.subheader("☁️ Common Distortion Themes (Word Cloud)")
+
+                with st.spinner("Generating Word Cloud..."):
+                    wc = WordCloud(width=800, height=400, background_color='white', colormap='Reds').generate(
+                        distorted_text_corpus)
+                    fig, ax = plt.subplots(figsize=(10, 5))
+                    ax.imshow(wc, interpolation='bilinear')
+                    ax.axis('off')
+                    st.pyplot(fig)
+                    plt.close(fig)
             else:
                 st.info("No distortions found to generate Word Cloud.")
 
+            # 3. DOWNLOAD BUTTON
+            st.divider()
             csv_data = df_res.to_csv(index=False).encode('utf-8')
-            st.download_button(label="📥 Download Results CSV", data=csv_data, file_name="bulk_analysis_results.csv",
-                               mime="text/csv")
+            st.download_button(
+                label="📥 Download Results CSV",
+                data=csv_data,
+                file_name="bulk_analysis_results.csv",
+                mime="text/csv"
+            )
 
 st.markdown("""<div class="footer-disclaimer">⚠️ ACADEMIC PROTOTYPE. NOT A MEDICAL DEVICE.</div>""",
             unsafe_allow_html=True)

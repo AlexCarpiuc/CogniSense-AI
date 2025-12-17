@@ -1,0 +1,56 @@
+=========================================================
+COGNISENSE AI - TAB 3: BATCH PROCESSING (RESEARCH MODE)
+=========================================================
+INSTRUCTIONS:
+This module allows for the bulk analysis of patient data to generate 
+cohort statistics and download aggregate reports.
+
+To test this feature, you need a .CSV file with a specific structure.
+
+STEP 1: PREPARE THE DATA FILE
+Create a file named "patient_batch.csv" (or use the content below).
+The file MUST have two columns: 'id' and 'text'.
+There are 2 example files in the .zip, named Tab3_file1.csv and
+Tab3_file2.csv, respectively.
+You can choose to make a .csv by yourself with the data provided
+below, as well.
+------------------------------------------------------------------------
+SAMPLE CSV CONTENT (Copy and Save as .csv)
+------------------------------------------------------------------------
+id,text
+P001,"I feel a bit tired today but I can manage."
+P002,"If I don't get this promotion, my entire career is over."
+P003,"He didn't say hello to me, so he definitely hates me."
+P004,"I am completely useless at everything I do."
+P005,"I feel anxious about the trip, which is normal."
+P006,"I felt a pain in my arm, I am surely having a stroke."
+P007,"It's all my fault that it rained during the picnic."
+P008,"I should never make mistakes, otherwise I am weak."
+P009,"I'm sad about the news, but I will recover."
+P010,"Nothing good ever happens to me."
+
+------------------------------------------------------------------------
+STEP 2: UPLOAD AND PROCESS
+------------------------------------------------------------------------
+1. Go to Tab 3 ("Batch Analysis").
+2. Drag and drop the "patient_batch.csv" file.
+3. Click "Process Batch".
+
+------------------------------------------------------------------------
+STEP 3: VERIFY RESULTS (EXPECTED OUTPUT)
+------------------------------------------------------------------------
+1. STATISTICS:
+   - Total Processed: 10
+   - Distorted: 6 (60%)
+   - Non-Distorted: 4 (40%)
+
+2. VISUALIZATIONS:
+   - A Pie Chart showing the distribution of Healthy vs. Distorted.
+   - A Bar Chart showing the frequency of specific distortions 
+     (e.g., Catastrophizing and Labeling should be prominent).
+
+3. EXPORT:
+   - Verify that the "Download Report" button appears.
+   - The downloaded CSV should contain a new column: "Predicted_Label".
+
+========================================================================
